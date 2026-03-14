@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class DrinkShopController {
 
     private DrinkShopService service;
+    private boolean uiInitialized;
 
     // ---------- PRODUCT ----------
     @FXML
@@ -81,7 +82,7 @@ public class DrinkShopController {
 
     public void setService(DrinkShopService service) {
         this.service = service;
-        initData();
+        tryInitData();
     }
 
     @FXML
@@ -95,9 +96,6 @@ public class DrinkShopController {
         colProdTip.setCellValueFactory(new PropertyValueFactory<>("tip"));
         productTable.setItems(productList);
 
-        if (service != null && service.getAllCategories() != null) {
-            comboProdCategorie.getItems().setAll(service.getAllCategories());
-        }
         comboProdTip.getItems().setAll(TipBautura.values());
 
         // RETETE
@@ -125,11 +123,22 @@ public class DrinkShopController {
         currentOrderTable.setItems(currentOrderItems);
 
         comboQty.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
+
+        uiInitialized = true;
+        tryInitData();
+    }
+
+    private void tryInitData() {
+        if (service == null || !uiInitialized) {
+            return;
+        }
+        initData();
     }
 
     private void initData() {
         productList.setAll(service.getAllProducts());
         retetaList.setAll(service.getAllRetete());
+        comboProdCategorie.getItems().setAll(service.getAllCategories());
         lblTotalRevenue.setText("Daily Revenue: " + service.getDailyRevenue());
         updateOrderTotal();
     }
@@ -288,6 +297,9 @@ public class DrinkShopController {
     }
 
     private void updateOrderTotal() {
+        if (service == null || lblOrderTotal == null) {
+            return;
+        }
         currentOrder.getItems().clear();
         currentOrder.getItems().addAll(currentOrderItems);
         double total = service.computeTotal(currentOrder);
@@ -310,3 +322,4 @@ public class DrinkShopController {
         alert.showAndWait();
     }
 }
+
