@@ -6,6 +6,7 @@ import drinkshop.repository.file.FileOrderRepository;
 import drinkshop.repository.file.FileProductRepository;
 import drinkshop.repository.file.FileRetetaRepository;
 import drinkshop.repository.file.FileStocRepository;
+import drinkshop.repository.memory.MemoryCategorieRepository;
 import drinkshop.service.DrinkShopService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -22,18 +23,21 @@ public class DrinkShopApp extends Application {
         Repository<Integer, Order> orderRepo = new FileOrderRepository("data/orders.txt", productRepo);
         Repository<Integer, Reteta> retetaRepo = new FileRetetaRepository("data/retete.txt");
         Repository<Integer, Stoc> stocRepo = new FileStocRepository("data/stocuri.txt");
+        Repository<Integer, CategorieBautura> catRepo = new MemoryCategorieRepository();
 
         // ---------- Initializare Service ----------
-        DrinkShopService service = new DrinkShopService(productRepo, orderRepo, retetaRepo, stocRepo);
+        DrinkShopService service = new DrinkShopService(productRepo, orderRepo, retetaRepo, stocRepo, catRepo);
 
         // ---------- Incarcare FXML ----------
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("drinkshop.fxml"));
-        Scene scene = new Scene(loader.load());
 
-        // ---------- Setare Service in Controller ----------
-        DrinkShopController controller = loader.getController();
+        // Inject the service into the controller before initialize() is called
+        DrinkShopController controller = new DrinkShopController();
         controller.setService(service);
+        loader.setControllerFactory(c -> controller);
+
+        Scene scene = new Scene(loader.load());
 
         // ---------- Afisare Fereastra ----------
         stage.setTitle("Coffee Shop Management");
