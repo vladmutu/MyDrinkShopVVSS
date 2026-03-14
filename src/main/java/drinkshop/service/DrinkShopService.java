@@ -20,6 +20,7 @@ public class DrinkShopService {
     private final RetetaService retetaService;
     private final StocService stocService;
     private final DailyReportService report;
+    private final Repository<Integer, CategorieBautura> catRepo;
 
     /**
      * Constructs a {@code DrinkShopService} with the specified repositories.
@@ -29,18 +30,21 @@ public class DrinkShopService {
      * @param orderRepo   The repository for managing {@link Order} entities.
      * @param retetaRepo  The repository for managing {@link Reteta} (recipe)
      *                    entities.
-     * @param stocService The repository for managing {@link Stoc} (stock) entities.
+     * @param stocRepo   The repository for managing {@link Stoc} (stock) entities.
+     * @param catRepo    The repository for managing {@link CategorieBautura} (category) entities.
      */
     public DrinkShopService(
             Repository<Integer, Product> productRepo,
             Repository<Integer, Order> orderRepo,
             Repository<Integer, Reteta> retetaRepo,
-            Repository<Integer, Stoc> stocService) {
+            Repository<Integer, Stoc> stocRepo,
+            Repository<Integer, CategorieBautura> catRepo) {
         this.productService = new ProductService(productRepo);
         this.orderService = new OrderService(orderRepo, productRepo);
         this.retetaService = new RetetaService(retetaRepo);
-        this.stocService = new StocService(stocService);
+        this.stocService = new StocService(stocRepo);
         this.report = new DailyReportService(orderRepo);
+        this.catRepo = catRepo;
     }
 
     // ---------- PRODUCT ----------
@@ -82,7 +86,7 @@ public class DrinkShopService {
      * @return A list containing all {@code CategorieBautura} entries.
      */
     public List<CategorieBautura> getAllCategories() {
-        return java.util.Arrays.asList(CategorieBautura.values());
+        return catRepo.findAll();
     }
 
     /**
@@ -126,11 +130,13 @@ public class DrinkShopService {
     }
 
     /**
-     * Finalizes an order by checking stock availability, consuming the required stock,
+     * Finalizes an order by checking stock availability, consuming the required
+     * stock,
      * and saving the order in the system.
      *
      * @param o The {@code Order} to be finalized.
-     * @throws IllegalStateException If there is insufficient stock to fulfill any of the products' recipe requirements.
+     * @throws IllegalStateException If there is insufficient stock to fulfill any
+     *                               of the products' recipe requirements.
      */
     public void finalizeazaComanda(Order o) {
         // 1. Verifica stocul pentru fiecare produs din comanda
