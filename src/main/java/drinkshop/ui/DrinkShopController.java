@@ -2,6 +2,7 @@ package drinkshop.ui;
 
 import drinkshop.domain.*;
 import drinkshop.service.DrinkShopService;
+import drinkshop.service.validator.ValidationException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -71,7 +72,6 @@ public class DrinkShopController {
         colProdTip.setCellValueFactory(new PropertyValueFactory<>("tip"));
         productTable.setItems(productList);
 
-        comboProdCategorie.getItems().setAll(CategorieBautura.values());
         comboProdTip.getItems().setAll(TipBautura.values());
 
         // RETETE
@@ -106,6 +106,9 @@ public class DrinkShopController {
         retetaList.setAll(service.getAllRetete());
         lblTotalRevenue.setText("Daily Revenue: " + service.getDailyRevenue());
         updateOrderTotal();
+        
+        // Populated here because service is initialized
+        comboProdCategorie.getItems().setAll(service.getAllCategories());
     }
 
     // ---------- PRODUCT ----------
@@ -222,16 +225,20 @@ public class DrinkShopController {
 
     @FXML
     private void onFinalizeOrder() {
-        currentOrder.getItems().clear();
-        currentOrder.getItems().addAll(currentOrderItems);
-        currentOrder.computeTotalPrice();
+        try {
+            currentOrder.getItems().clear();
+            currentOrder.getItems().addAll(currentOrderItems);
+            currentOrder.computeTotalPrice();
 
-        service.addOrder(currentOrder);
-        txtReceipt.setText(service.generateReceipt(currentOrder));
+            service.finalizeazaComanda(currentOrder); // Foloseste noua metoda care scade si stocul
+            txtReceipt.setText(service.generateReceipt(currentOrder));
 
-        currentOrderItems.clear();
-        currentOrder = new Order(currentOrder.getId() + 1);
-        updateOrderTotal();
+            currentOrderItems.clear();
+            currentOrder = new Order(currentOrder.getId() + 1);
+            updateOrderTotal();
+        } catch (IllegalStateException | ValidationException e) {
+            showError(e.getMessage());
+        }
     }
 
     private void updateOrderTotal() {
