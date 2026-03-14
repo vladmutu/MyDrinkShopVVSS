@@ -222,16 +222,41 @@ public class DrinkShopController {
 
     @FXML
     private void onFinalizeOrder() {
-        currentOrder.getItems().clear();
-        currentOrder.getItems().addAll(currentOrderItems);
-        currentOrder.computeTotalPrice();
+        try {
+            // C01: Parcurgem produsele din comandă și apelăm logica de scădere a stocului
+            for (OrderItem item : currentOrderItems) {
+                // Scădem stocul de atâtea ori câtă cantitate a fost selectată pentru produsul respectiv
+                for (int i = 0; i < item.getQuantity(); i++) {
+                    service.comandaProdus(item.getProduct());
+                }
+            }
 
-        service.addOrder(currentOrder);
-        txtReceipt.setText(service.generateReceipt(currentOrder));
+            currentOrder.getItems().clear();
+            currentOrder.getItems().addAll(currentOrderItems);
+            currentOrder.computeTotalPrice();
 
-        currentOrderItems.clear();
-        currentOrder = new Order(currentOrder.getId() + 1);
-        updateOrderTotal();
+            service.addOrder(currentOrder);
+            txtReceipt.setText(service.generateReceipt(currentOrder));
+
+            // C07: Salvarea bonului în format .csv (pe lângă afișarea în interfață)
+            try (java.io.FileWriter writer = new java.io.FileWriter("bon_comanda_" + currentOrder.getId() + ".csv")) {
+                writer.write("Produs,Cantitate,PretTotal\n");
+                for(OrderItem item : currentOrder.getItems()) {
+                    writer.write(item.getProduct().getNume() + "," + item.getQuantity() + "," + item.getTotal() + "\n");
+                }
+                writer.write("TOTAL COMANDA,, " + currentOrder.getTotalPrice() + "\n");
+            } catch (java.io.IOException e) {
+                showError("Eroare la salvarea bonului CSV: " + e.getMessage());
+            }
+
+            currentOrderItems.clear();
+            currentOrder = new Order(currentOrder.getId() + 1);
+            updateOrderTotal();
+
+        } catch (IllegalStateException e) {
+            // C08: Prindem excepția (ex: Stoc insuficient) și o afișăm pe ecran ca alertă
+            showError("Eroare la finalizarea comenzii:\n" + e.getMessage());
+        }
     }
 
     private void updateOrderTotal() {

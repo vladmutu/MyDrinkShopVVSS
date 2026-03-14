@@ -18,8 +18,17 @@ public class CsvExporter {
             double sum=0.0;
             for (Order o : orders){
                 for (OrderItem i : o.getItems()) {
-                    Product p = products.stream().filter((p1)->i.getProduct().getId()==p1.getId()).toList().get(0);
-                    w.write(o.getId() + "," + p.getNume() + "," + i.getQuantity() + "," + i.getTotal() + "\n");
+                    Product p = products.stream()
+                            .filter((p1) -> i.getProduct().getId() == p1.getId())
+                            .findFirst()
+                            .orElse(null);
+
+                    if (p != null) {
+                        w.write(p.getNume() + ": "+ p.getPret() + " x " + i.getQuantity() + " = " + i.getTotal() +" RON\n");
+                    } else {
+                        // Dacă produsul a fost șters, punem un text default
+                        w.write("Produs șters/indisponibil x "+i.getQuantity()+" = "+ i.getTotal()+" RON\n");
+                    }
                 }
                 w.write("total order: "+o.getTotal()+" RON\n");
                 w.write("-------------------------------\n");
