@@ -29,15 +29,13 @@ public class DrinkShopApp extends Application {
         DrinkShopService service = new DrinkShopService(productRepo, orderRepo, retetaRepo, stocRepo, catRepo);
 
         // ---------- Incarcare FXML ----------
-
         FXMLLoader loader = new FXMLLoader(getClass().getResource("drinkshop.fxml"));
-
-        // Inject the service into the controller before initialize() is called
-        DrinkShopController controller = new DrinkShopController();
-        controller.setService(service);
-        loader.setControllerFactory(c -> controller);
-
         Scene scene = new Scene(loader.load());
+
+        // Use the controller created by FXML so @FXML fields are injected.
+        DrinkShopController controller = loader.getController();
+        controller.setService(service);
+
 
         // ---------- Afisare Fereastra ----------
         stage.setTitle("Coffee Shop Management");
