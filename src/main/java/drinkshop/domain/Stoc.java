@@ -7,7 +7,7 @@ public class Stoc {
     private double cantitate;
     private double stocMinim;
 
-    public Stoc(int id, String ingredient, double cantitate, double stocMinim) {
+    public Stoc(int id, String ingredient, int cantitate, int stocMinim) {
         this.id = id;
         this.ingredient = ingredient;
         this.cantitate = cantitate;

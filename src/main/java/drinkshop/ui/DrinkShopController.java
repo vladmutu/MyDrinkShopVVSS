@@ -2,7 +2,6 @@ package drinkshop.ui;
 
 import drinkshop.domain.*;
 import drinkshop.service.DrinkShopService;
-import drinkshop.service.validator.ValidationException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,62 +15,38 @@ import java.util.stream.Collectors;
 public class DrinkShopController {
 
     private DrinkShopService service;
-    private boolean uiInitialized;
 
     // ---------- PRODUCT ----------
-    @FXML
-    private TableView<Product> productTable;
-    @FXML
-    private TableColumn<Product, Integer> colProdId;
-    @FXML
-    private TableColumn<Product, String> colProdName;
-    @FXML
-    private TableColumn<Product, Double> colProdPrice;
-    @FXML
-    private TableColumn<Product, CategorieBautura> colProdCategorie;
-    @FXML
-    private TableColumn<Product, TipBautura> colProdTip;
-    @FXML
-    private TextField txtProdName, txtProdPrice;
-    @FXML
-    private ComboBox<CategorieBautura> comboProdCategorie;
-    @FXML
-    private ComboBox<TipBautura> comboProdTip;
+    @FXML private TableView<Product> productTable;
+    @FXML private TableColumn<Product, Integer> colProdId;
+    @FXML private TableColumn<Product, String> colProdName;
+    @FXML private TableColumn<Product, Double> colProdPrice;
+    @FXML private TableColumn<Product, CategorieBautura> colProdCategorie;
+    @FXML private TableColumn<Product, TipBautura> colProdTip;
+    @FXML private TextField txtProdName, txtProdPrice;
+    @FXML private ComboBox<CategorieBautura> comboProdCategorie;
+    @FXML private ComboBox<TipBautura> comboProdTip;
 
     // ---------- RETETE ----------
-    @FXML
-    private TableView<Reteta> retetaTable;
-    @FXML
-    private TableColumn<Reteta, Integer> colRetetaId;
-    @FXML
-    private TableColumn<Reteta, String> colRetetaDesc;
+    @FXML private TableView<Reteta> retetaTable;
+    @FXML private TableColumn<Reteta, Integer> colRetetaId;
+    @FXML private TableColumn<Reteta, String> colRetetaDesc;
 
-    @FXML
-    private TableView<IngredientReteta> newRetetaTable;
-    @FXML
-    private TableColumn<IngredientReteta, String> colNewIngredName;
-    @FXML
-    private TableColumn<IngredientReteta, Double> colNewIngredCant;
-    @FXML
-    private TextField txtNewIngredName, txtNewIngredCant;
+    @FXML private TableView<IngredientReteta> newRetetaTable;
+    @FXML private TableColumn<IngredientReteta, String> colNewIngredName;
+    @FXML private TableColumn<IngredientReteta, Double> colNewIngredCant;
+    @FXML private TextField txtNewIngredName, txtNewIngredCant;
 
     // ---------- ORDER (CURRENT) ----------
-    @FXML
-    private TableView<OrderItem> currentOrderTable;
-    @FXML
-    private TableColumn<OrderItem, String> colOrderProdName;
-    @FXML
-    private TableColumn<OrderItem, Integer> colOrderQty;
+    @FXML private TableView<OrderItem> currentOrderTable;
+    @FXML private TableColumn<OrderItem, String> colOrderProdName;
+    @FXML private TableColumn<OrderItem, Integer> colOrderQty;
 
-    @FXML
-    private ComboBox<Integer> comboQty;
-    @FXML
-    private Label lblOrderTotal;
-    @FXML
-    private TextArea txtReceipt;
+    @FXML private ComboBox<Integer> comboQty;
+    @FXML private Label lblOrderTotal;
+    @FXML private TextArea txtReceipt;
 
-    @FXML
-    private Label lblTotalRevenue;
+    @FXML private Label lblTotalRevenue;
 
     private ObservableList<Product> productList = FXCollections.observableArrayList();
     private ObservableList<Reteta> retetaList = FXCollections.observableArrayList();
@@ -82,7 +57,7 @@ public class DrinkShopController {
 
     public void setService(DrinkShopService service) {
         this.service = service;
-        tryInitData();
+        initData();
     }
 
     @FXML
@@ -96,6 +71,7 @@ public class DrinkShopController {
         colProdTip.setCellValueFactory(new PropertyValueFactory<>("tip"));
         productTable.setItems(productList);
 
+        comboProdCategorie.getItems().setAll(CategorieBautura.values());
         comboProdTip.getItems().setAll(TipBautura.values());
 
         // RETETE
@@ -122,23 +98,12 @@ public class DrinkShopController {
         colOrderQty.setCellValueFactory(new PropertyValueFactory<>("quantity"));
         currentOrderTable.setItems(currentOrderItems);
 
-        comboQty.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10));
-
-        uiInitialized = true;
-        tryInitData();
-    }
-
-    private void tryInitData() {
-        if (service == null || !uiInitialized) {
-            return;
-        }
-        initData();
+        comboQty.setItems(FXCollections.observableArrayList(1,2,3,4,5,6,7,8,9,10));
     }
 
     private void initData() {
         productList.setAll(service.getAllProducts());
         retetaList.setAll(service.getAllRetete());
-        comboProdCategorie.getItems().setAll(service.getAllCategories());
         lblTotalRevenue.setText("Daily Revenue: " + service.getDailyRevenue());
         updateOrderTotal();
     }
@@ -146,7 +111,7 @@ public class DrinkShopController {
     // ---------- PRODUCT ----------
     @FXML
     private void onAddProduct() {
-        Reteta r = retetaTable.getSelectionModel().getSelectedItem();
+        Reteta r=retetaTable.getSelectionModel().getSelectedItem();
 
         if (r == null) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -154,7 +119,8 @@ public class DrinkShopController {
             alert.setHeaderText("Selectati o reteta pentru care adugati un produs");
             alert.showAndWait();
             return;
-        } else if (service.getAllProducts().stream().filter(p -> p.getId() == r.getId()).toList().size() > 0) {
+        }else
+        if (service.getAllProducts().stream().filter(p->p.getId()==r.getId()).toList().size()>0) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Error");
             alert.setHeaderText("Exista un produs cu reteta adaugata.");
@@ -173,8 +139,7 @@ public class DrinkShopController {
     @FXML
     private void onUpdateProduct() {
         Product selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null)
-            return;
+        if (selected == null) return;
         service.updateProduct(selected.getId(), txtProdName.getText(),
                 Double.parseDouble(txtProdPrice.getText()),
                 comboProdCategorie.getValue(), comboProdTip.getValue());
@@ -184,8 +149,7 @@ public class DrinkShopController {
     @FXML
     private void onDeleteProduct() {
         Product selected = productTable.getSelectionModel().getSelectedItem();
-        if (selected == null)
-            return;
+        if (selected == null) return;
         service.deleteProduct(selected.getId());
         initData();
     }
@@ -210,13 +174,12 @@ public class DrinkShopController {
     @FXML
     private void onDeleteNewIngred() {
         IngredientReteta sel = newRetetaTable.getSelectionModel().getSelectedItem();
-        if (sel != null)
-            newRetetaList.remove(sel);
+        if (sel != null) newRetetaList.remove(sel);
     }
 
     @FXML
     private void onAddNewReteta() {
-        Reteta r = new Reteta(service.getAllRetete().size() + 1, new ArrayList<>(newRetetaList));
+        Reteta r = new Reteta(service.getAllRetete().size()+1, new ArrayList<>(newRetetaList));
         service.addReteta(r);
         newRetetaList.clear();
         initData();
@@ -259,47 +222,19 @@ public class DrinkShopController {
 
     @FXML
     private void onFinalizeOrder() {
-        try {
-            // C01: Parcurgem produsele din comandă și apelăm logica de scădere a stocului
-            for (OrderItem item : currentOrderItems) {
-                // Scădem stocul de atâtea ori câtă cantitate a fost selectată pentru produsul respectiv
-                for (int i = 0; i < item.getQuantity(); i++) {
-                    service.comandaProdus(item.getProduct());
-                }
-            }
+        currentOrder.getItems().clear();
+        currentOrder.getItems().addAll(currentOrderItems);
+        currentOrder.computeTotalPrice();
 
-            currentOrder.getItems().clear();
-            currentOrder.getItems().addAll(currentOrderItems);
-            currentOrder.computeTotalPrice();
+        service.addOrder(currentOrder);
+        txtReceipt.setText(service.generateReceipt(currentOrder));
 
-            service.addOrder(currentOrder);
-            txtReceipt.setText(service.generateReceipt(currentOrder));
-
-            // C07: Salvarea bonului în format .csv (pe lângă afișarea în interfață)
-            try (java.io.FileWriter writer = new java.io.FileWriter("bon_comanda_" + currentOrder.getId() + ".csv")) {
-                writer.write("Produs,Cantitate,PretTotal\n");
-                for(OrderItem item : currentOrder.getItems()) {
-                    writer.write(item.getProduct().getNume() + "," + item.getQuantity() + "," + item.getTotal() + "\n");
-                }
-                writer.write("TOTAL COMANDA,, " + currentOrder.getTotalPrice() + "\n");
-            } catch (java.io.IOException e) {
-                showError("Eroare la salvarea bonului CSV: " + e.getMessage());
-            }
-
-            currentOrderItems.clear();
-            currentOrder = new Order(currentOrder.getId() + 1);
-            updateOrderTotal();
-
-        } catch (IllegalStateException e) {
-            // C08: Prindem excepția (ex: Stoc insuficient) și o afișăm pe ecran ca alertă
-            showError("Eroare la finalizarea comenzii:\n" + e.getMessage());
-        }
+        currentOrderItems.clear();
+        currentOrder = new Order(currentOrder.getId() + 1);
+        updateOrderTotal();
     }
 
     private void updateOrderTotal() {
-        if (service == null || lblOrderTotal == null) {
-            return;
-        }
         currentOrder.getItems().clear();
         currentOrder.getItems().addAll(currentOrderItems);
         double total = service.computeTotal(currentOrder);
@@ -322,4 +257,3 @@ public class DrinkShopController {
         alert.showAndWait();
     }
 }
-
