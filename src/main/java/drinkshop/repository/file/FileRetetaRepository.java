@@ -30,9 +30,12 @@ public class FileRetetaRepository
         int index=1;
         while (index<elems.length) {
             String ingredientTotal= elems[index++];
-            String[] ingredientSeparat = ingredientTotal.split(":");
-            String ingredientName = ingredientSeparat[0];
-            Double ingredientQuantity = Double.parseDouble(ingredientSeparat[1]);
+            String[] ingredientSplit = ingredientTotal.split(":");
+            if(ingredientSplit.length !=2 ) {
+                throw new IllegalArgumentException("Format invalid:"+ingredientTotal);
+            }
+            String ingredientName = ingredientSplit[0];
+            Double ingredientQuantity = Double.parseDouble(ingredientSplit[1]);
             ingrediente.add(new IngredientReteta(ingredientName, ingredientQuantity));
         }
         return new Reteta(productId, ingrediente);

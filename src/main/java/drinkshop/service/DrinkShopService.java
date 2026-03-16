@@ -55,7 +55,17 @@ public class DrinkShopService {
     }
 
     // ---------- ORDER ----------
+    // Modificăm addOrder pentru a integra logica de consum a stocului folosind metoda comandaProdus:
     public void addOrder(Order o) {
+        // 1. Validăm și consumăm stocul pentru fiecare produs din coș
+        for (OrderItem item : o.getItems()) {
+            // Apelăm comandaProdus de atâtea ori cât este cantitatea din acel produs
+            for(int i = 0; i < item.getQuantity(); i++) {
+                comandaProdus(item.getProduct());
+            }
+        }
+
+        // 2. Doar dacă nu a crăpat stocul la pasul 1, salvăm comanda finală
         orderService.addOrder(o);
     }
 

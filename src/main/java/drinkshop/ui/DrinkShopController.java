@@ -2,6 +2,7 @@ package drinkshop.ui;
 
 import drinkshop.domain.*;
 import drinkshop.service.DrinkShopService;
+import drinkshop.service.validator.ValidationException;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -34,7 +35,7 @@ public class DrinkShopController {
 
     @FXML private TableView<IngredientReteta> newRetetaTable;
     @FXML private TableColumn<IngredientReteta, String> colNewIngredName;
-    @FXML private TableColumn<IngredientReteta, Double> colNewIngredCant;
+    @FXML private TableColumn<IngredientReteta, Double> colNewIngredientQty;
     @FXML private TextField txtNewIngredName, txtNewIngredCant;
 
     // ---------- ORDER (CURRENT) ----------
@@ -86,7 +87,7 @@ public class DrinkShopController {
         retetaTable.setItems(retetaList);
 
         colNewIngredName.setCellValueFactory(new PropertyValueFactory<>("denumire"));
-        colNewIngredCant.setCellValueFactory(new PropertyValueFactory<>("cantitate"));
+        colNewIngredientQty.setCellValueFactory(new PropertyValueFactory<>("cantitate"));
         newRetetaTable.setItems(newRetetaList);
 
         // CURRENT ORDER TABLE
@@ -132,8 +133,12 @@ public class DrinkShopController {
                 Double.parseDouble(txtProdPrice.getText()),
                 comboProdCategorie.getValue(),
                 comboProdTip.getValue());
-        service.addProduct(p);
-        initData();
+        try {
+            service.addProduct(p);
+            initData();
+        }catch(ValidationException e){
+            showError("Eroare la adaugare:" + e.getMessage());
+        }
     }
 
     @FXML

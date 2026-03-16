@@ -4,6 +4,7 @@ import drinkshop.domain.IngredientReteta;
 import drinkshop.domain.Reteta;
 import drinkshop.domain.Stoc;
 import drinkshop.repository.Repository;
+import drinkshop.service.validator.ValidationException;
 
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class StocService {
 
     public void consuma(Reteta reteta) {
         if (!areSuficient(reteta)) {
-            throw new IllegalStateException("Stoc insuficient pentru rețeta.");
+            throw new ValidationException("Stoc insuficient pentru rețeta.");
         }
 
         for (IngredientReteta e : reteta.getIngrediente()) {
