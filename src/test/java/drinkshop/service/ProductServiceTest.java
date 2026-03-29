@@ -15,13 +15,53 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+ * ============================================================
+ * LAB BBT (ECP + BVA) - ProductServiceTest
+ * ============================================================
+ *
+ * Ce face această clasă:
+ * - Testează metodele ProductService pentru cerința de adăugare și actualizare produs:
+ *   - addProduct(...)
+ *   - updateProduct(...)
+ *
+ * Ce parametri sunt investigați (conform cerinței):
+ * - id (constrângere: id > 0)
+ * - price/pret (constrângere: price > 0)
+ *
+ * Ce tehnici de testare sunt aplicate:
+ * 1) ECP (Equivalence Class Partitioning)
+ *    - Se definesc clase de echivalență valide/non-valide pentru id și price.
+ *    - Exemple:
+ *      - valid: id=1, price=10.0
+ *      - non-valid: id=0, price=10.0
+ *      - non-valid: id=1, price=0.0
+ *      - non-valid: id=0, price=0.0
+ *
+ * 2) BVA (Boundary Value Analysis)
+ *    - Se testează valori la limită în jurul frontierei 0:
+ *      - pentru id: -1, 0, 1, 2
+ *      - pentru price: -0.01, 0.0, 0.01, 1.0
+ *
+ * Respectarea cerințelor JUnit 5:
+ * - Sunt folosite adnotări distincte (diferite de @Test/@BeforeEach/@AfterEach):
+ *   @DisplayName, @Tag, @TestInstance, @Nested, @ParameterizedTest, @CsvSource
+ *
+ * Respectarea șablonului AAA:
+ * - Fiecare test urmează explicit secțiunile:
+ *   Arrange -> Act -> Assert
+ *
+ * Parametri neinvestigați:
+ * - name/category/tip sunt menținuți pe valori dummy valide (validProduct(...)),
+ *   conform cerinței că doar 2 parametri sunt analizați prin ECP/BVA.
+ */
 @DisplayName("BBT ECP+BVA - ProductService")
 @Tag("bbt")
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class ProductServiceTest {
 
-    // In-memory repository used to isolate service behavior from file persistence.
-
+    // Repository in-memory pentru izolarea testelor de persistența pe fișier.
+    // Astfel testăm doar logica din ProductService.
     private Repository<Integer, Product> newInMemoryRepo() {
         return new AbstractRepository<>() {
             @Override
@@ -31,8 +71,9 @@ class ProductServiceTest {
         };
     }
 
+    // Obiect dummy valid pentru parametrii neinvestigați (name/categorie/tip).
+    // Parametrii variabili în testele ECP/BVA rămân id și price.
     private Product validProduct(int id, double price) {
-        // Dummy valid values for non-investigated parameters (name/category/type).
         return new Product(id, "Latte", price, CategorieBautura.MILK_COFFEE, TipBautura.DAIRY);
     }
 
@@ -40,7 +81,8 @@ class ProductServiceTest {
     @DisplayName("addProduct")
     class AddProductTests {
 
-        // ECP over two constrained parameters: id (>0) and price (>0).
+        // ECP pentru addProduct:
+        // - 1 caz valid + 3 cazuri non-valide pe clasele de echivalență id/price.
         @ParameterizedTest(name = "ECP add: id={0}, price={1}, valid={2}")
         @CsvSource({
                 "1, 10.0, true",
@@ -64,7 +106,8 @@ class ProductServiceTest {
             }
         }
 
-        // BVA around id boundary at 0: invalid {-1,0}, valid {1,2}.
+        // BVA pentru addProduct - parametru id:
+        // frontiera este 0; testăm sub limită, la limită și peste limită.
         @ParameterizedTest(name = "BVA add id boundary: id={0}, valid={1}")
         @CsvSource({
                 "-1, false",
@@ -88,7 +131,8 @@ class ProductServiceTest {
             }
         }
 
-        // BVA around price boundary at 0: invalid {-0.01,0}, valid {0.01,1.0}.
+        // BVA pentru addProduct - parametru price:
+        // frontiera este 0; testăm valori imediat sub și imediat peste limită.
         @ParameterizedTest(name = "BVA add price boundary: price={0}, valid={1}")
         @CsvSource({
                 "-0.01, false",
@@ -117,7 +161,8 @@ class ProductServiceTest {
     @DisplayName("updateProduct")
     class UpdateProductTests {
 
-        // ECP for update using same constrained parameters: id and price.
+        // ECP pentru updateProduct:
+        // se validează aceleași clase de echivalență pentru id și price.
         @ParameterizedTest(name = "ECP update: id={0}, price={1}, valid={2}")
         @CsvSource({
                 "1, 12.0, true",
@@ -129,7 +174,7 @@ class ProductServiceTest {
             // Arrange
             Repository<Integer, Product> repo = newInMemoryRepo();
             ProductService service = new ProductService(repo);
-            service.addProduct(validProduct(1, 10.0)); // dummy valid existing product
+            service.addProduct(validProduct(1, 10.0)); // produs existent valid (dummy setup)
 
             // Act
             // Assert
