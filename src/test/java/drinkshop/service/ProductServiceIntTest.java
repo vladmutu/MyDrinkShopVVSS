@@ -14,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+//Step 2: ProductServiceIntTest (S + V real, R mock)
+
 @ExtendWith(MockitoExtension.class)
 class ProductServiceIntTest {
 
