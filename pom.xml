@@ -6,7 +6,7 @@
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <javafx.version>21</javafx.version>
+    <javafx.version>22</javafx.version>
     <junit.version>5.10.0</junit.version>
   </properties>
   <dependencies>
