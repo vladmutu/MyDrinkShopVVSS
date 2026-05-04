@@ -11,7 +11,10 @@ public class ReceiptGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append("===== BON FISCAL =====\n").append("Comanda #").append(o.getId()).append("\n");
         for (OrderItem i : o.getItems()) {
-            Product p = products.stream().filter((p1)->i.getProduct().getId()==p1.getId()).toList().get(0);
+            Product p = products.stream()
+                    .filter(p1 -> i.getProduct().getId() == p1.getId())
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Product not found for order item"));
             sb.append(p.getNume()+": ").append(p.getPret()).append(" x ").append(i.getQuantity()).append(" = ").append(i.getTotal()).append(" RON\n");
         }
         sb.append("---------------------\nTOTAL: ").append(o.getTotalPrice()).append(" RON\n=====================\n");
