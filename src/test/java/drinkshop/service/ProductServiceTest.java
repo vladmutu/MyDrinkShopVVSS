@@ -9,6 +9,7 @@ import drinkshop.service.validator.ValidationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -28,6 +29,9 @@ import static org.junit.jupiter.api.Assertions.*;
  * Ce parametri sunt investigați (conform cerinței):
  * - id (constrângere: id > 0)
  * - price/pret (constrângere: price > 0)
+ * - nume (constrângere: string nenul)
+ * - categoria (constrângere: trebuie selectată, nu null)
+ * - tip (constrângere: trebuie selectat, nu null)
  *
  * Ce tehnici de testare sunt aplicate:
  * 1) ECP (Equivalence Class Partitioning)
@@ -75,6 +79,11 @@ class ProductServiceTest {
     // Parametrii variabili în testele ECP/BVA rămân id și price.
     private Product validProduct(int id, double price) {
         return new Product(id, "Latte", price, CategorieBautura.MILK_COFFEE, TipBautura.DAIRY);
+    }
+
+    // Metoda helper pentru a crea produse cu parametri complet variabili
+    private Product createProduct(int id, String nume, double price, CategorieBautura categoria, TipBautura tip) {
+        return new Product(id, nume, price, categoria, tip);
     }
 
     @Nested
@@ -131,7 +140,54 @@ class ProductServiceTest {
             }
         }
 
-        // BVA pentru addProduct - parametru price:
+        // ==================== TESTE INDIVIDUALE PENTRU VALIDARE COMPLETA ====================
+
+        // Test INVALID ECP/BVA: categoria NU este selectata
+        @Test
+        @DisplayName("addProduct INVALID: categoria=null")
+        void addProduct_invalid_categoria_null() {
+            // Arrange
+            Repository<Integer, Product> repo = newInMemoryRepo();
+            ProductService service = new ProductService(repo);
+            // id > 0 (valid), nume nenul (valid), pret > 0 (valid), tip selectat (valid)
+            // categoria = null (INVALID)
+            Product p = createProduct(1, "Latte", 10.0, null, TipBautura.DAIRY);
+
+            // Act & Assert
+            assertThrows(ValidationException.class, () -> service.addProduct(p));
+        }
+
+        // Test INVALID ECP/BVA: id = -1
+        @Test
+        @DisplayName("addProduct INVALID: id=-1")
+        void addProduct_invalid_id_negative() {
+            // Arrange
+            Repository<Integer, Product> repo = newInMemoryRepo();
+            ProductService service = new ProductService(repo);
+            // id = -1 (INVALID), nume nenul (valid), pret > 0 (valid),
+            // categoria selectata (valid), tip selectat (valid)
+            Product p = createProduct(-1, "Latte", 10.0, CategorieBautura.MILK_COFFEE, TipBautura.DAIRY);
+
+            // Act & Assert
+            assertThrows(ValidationException.class, () -> service.addProduct(p));
+        }
+
+        // Test VALID ECP/BVA: toti parametrii valizi
+        @Test
+        @DisplayName("addProduct VALID: id>0, nume nenul, pret>0, categoria selectata, tip selectat")
+        void addProduct_valid_all_parameters() {
+            // Arrange
+            Repository<Integer, Product> repo = newInMemoryRepo();
+            ProductService service = new ProductService(repo);
+            // id > 0 (valid), nume nenul (valid), pret > 0 (valid),
+            // categoria selectata (valid), tip selectat (valid)
+            Product p = createProduct(1, "Latte", 10.0, CategorieBautura.MILK_COFFEE, TipBautura.DAIRY);
+
+            // Act & Assert
+            assertDoesNotThrow(() -> service.addProduct(p));
+            assertNotNull(service.findById(1));
+        }
+
         // frontiera este 0; testăm valori imediat sub și imediat peste limită.
         @ParameterizedTest(name = "BVA add price boundary: price={0}, valid={1}")
         @CsvSource({
@@ -192,5 +248,64 @@ class ProductServiceTest {
                 );
             }
         }
+
+        // ==================== TESTE INDIVIDUALE PENTRU VALIDARE COMPLETA ====================
+
+        // Test INVALID ECP/BVA: categoria NU este selectata
+        @Test
+        @DisplayName("updateProduct INVALID: categoria=null")
+        void updateProduct_invalid_categoria_null() {
+            // Arrange
+            Repository<Integer, Product> repo = newInMemoryRepo();
+            ProductService service = new ProductService(repo);
+            service.addProduct(validProduct(1, 10.0));
+
+            // id > 0 (valid), nume nenul (valid), pret > 0 (valid), tip selectat (valid)
+            // categoria = null (INVALID)
+            // Act & Assert
+            assertThrows(ValidationException.class, () ->
+                    service.updateProduct(1, "Latte Update", 12.0, null, TipBautura.DAIRY)
+            );
+        }
+
+        // Test INVALID ECP/BVA: id = -1
+        @Test
+        @DisplayName("updateProduct INVALID: id=-1")
+        void updateProduct_invalid_id_negative() {
+            // Arrange
+            Repository<Integer, Product> repo = newInMemoryRepo();
+            ProductService service = new ProductService(repo);
+            service.addProduct(validProduct(1, 10.0));
+
+            // id = -1 (INVALID), nume nenul (valid), pret > 0 (valid),
+            // categoria selectata (valid), tip selectat (valid)
+            // Act & Assert
+            assertThrows(ValidationException.class, () ->
+                    service.updateProduct(-1, "Latte Update", 12.0, CategorieBautura.MILK_COFFEE, TipBautura.DAIRY)
+            );
+        }
+
+        // Test VALID ECP/BVA: toti parametrii valizi
+        @Test
+        @DisplayName("updateProduct VALID: id>0, nume nenul, pret>0, categoria selectata, tip selectat")
+        void updateProduct_valid_all_parameters() {
+            // Arrange
+            Repository<Integer, Product> repo = newInMemoryRepo();
+            ProductService service = new ProductService(repo);
+            service.addProduct(validProduct(1, 10.0));
+
+            // id > 0 (valid), nume nenul (valid), pret > 0 (valid),
+            // categoria selectata (valid), tip selectat (valid)
+            // Act & Assert
+            assertDoesNotThrow(() ->
+                    service.updateProduct(1, "Latte Update", 12.0, CategorieBautura.MILK_COFFEE, TipBautura.DAIRY)
+            );
+            Product updated = service.findById(1);
+            assertNotNull(updated);
+            assertEquals("Latte Update", updated.getNume());
+            assertEquals(12.0, updated.getPret(), 0.0001);
+        }
     }
 }
+
+
