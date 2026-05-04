@@ -6,7 +6,7 @@
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <javafx.version>22</javafx.version>
+    <javafx.version>22.0.1</javafx.version>
     <junit.version>5.10.0</junit.version>
   </properties>
   <dependencies>
@@ -72,7 +72,7 @@
       <dependency>
           <groupId>org.controlsfx</groupId>
           <artifactId>controlsfx</artifactId>
-          <version>11.0.1</version>
+          <version>11.2.1</version>
       </dependency>
   </dependencies>
 
@@ -99,6 +99,16 @@
             <version>3.2.5</version>
             <configuration>
                 <useModulePath>false</useModulePath>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.11.0</version>
+            <configuration>
+                <release>17</release>
+                <useModulePath>false</useModulePath>
+                <encoding>UTF-8</encoding>
             </configuration>
         </plugin>
 
