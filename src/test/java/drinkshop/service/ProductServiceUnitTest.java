@@ -7,6 +7,7 @@ import drinkshop.repository.Repository;
 import drinkshop.service.validator.ValidationException;
 import drinkshop.service.validator.Validator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.*;
 
 //mvn -Dtest=ProductServiceUnitTest test
 @ExtendWith(MockitoExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class ProductServiceUnitTest {
 
     @Mock
